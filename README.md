@@ -2,6 +2,8 @@
 
 A web app for Google Keep based on kiwiz/gkeepapi.
 
+GitHub repository: `https://github.com/sebastianruff/GKeeper`
+
 ## Prerequisites
 
 - A Google account with **2-factor authentication (2FA)** enabled.
@@ -74,10 +76,10 @@ pytest -q
 1. (Optional) set a custom image tag:
 
    ```bash
-   export GKEEPER_IMAGE=ghcr.io/<github-user-or-org>/gkeeper:latest
+   export GKEEPER_IMAGE=ghcr.io/sebastianruff/gkeeper:latest
    ```
 
-   If not set, Compose uses `ghcr.io/your-github-user/gkeeper:latest` by default.
+   If not set, Compose uses `ghcr.io/sebastianruff/gkeeper:latest` by default.
 
 2. Pull and start the container:
 
@@ -98,7 +100,7 @@ Use this as a minimal `compose.yaml` example:
 ```yaml
 services:
   gkeeper:
-    image: ghcr.io/<github-user-or-org>/gkeeper:latest
+    image: ghcr.io/sebastianruff/gkeeper:latest
     ports:
       - "5000:5000"
     environment:
@@ -124,7 +126,7 @@ The image is published to GitHub Container Registry (GHCR) via `.github/workflow
 Published image name:
 
 ```text
-ghcr.io/<repository_owner>/gkeeper
+ghcr.io/sebastianruff/gkeeper
 ```
 
 ## Current Scope
