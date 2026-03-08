@@ -91,6 +91,27 @@ pytest -q
    http://localhost:5000
    ```
 
+## Docker Compose example
+
+Use this as a minimal `compose.yaml` example:
+
+```yaml
+services:
+  gkeeper:
+    image: ghcr.io/<github-user-or-org>/gkeeper:latest
+    ports:
+      - "5000:5000"
+    environment:
+      GOOGLE_CREDENTIALS_PATH: /data/gkeep_credentials.json
+      GOOGLE_STATE_PATH: /data/gkeep_state.json
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+```
+
+> The first time you open the app, enter your Google email + master token in the setup form.
+> They will be persisted in `./data/gkeep_credentials.json` with this example.
+
 ## Publish the GitHub Package (maintainers)
 
 The image is published to GitHub Container Registry (GHCR) via `.github/workflows/publish-package.yml`.
