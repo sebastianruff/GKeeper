@@ -2,16 +2,28 @@
 
 A web app for Google Keep based on kiwiz/gkeepapi.
 
-## Voraussetzungen
+## Prerequisites
 
-- Google-Konto mit aktivierter **2‑Faktor-Authentifizierung (2FA)**.
-- Ein für dieses Konto erstelltes **App-Passwort** (nicht das normale Google-Passwort).
+- A Google account with **2-factor authentication (2FA)** enabled.
+- A **Google master token** for that account (used by `gkeepapi.authenticate`).
+
+## Authentication Setup
+
+This project uses `Keep.authenticate(email, master_token)` instead of the deprecated `Keep.login(...)` flow.
+
+To get a master token, follow the `gpsoauth` alternative flow linked from the gkeepapi docs:
+<https://github.com/simon-weber/gpsoauth#alternative-flow>
+
+### Optional state cache
+
+The app stores Keep sync state in `KEEP_STATE_PATH` (default: `.cache/gkeep_state.json`) and reuses it on next startup.
+This reduces full-sync overhead and follows the gkeepapi recommendation to cache state between runs.
 
 ## API
 
 ### `GET /api/notes`
 
-Liefert Notizen in einem kleinen, stabilen JSON-Schema:
+Returns notes in a small, stable JSON schema:
 
 ```json
 [
@@ -27,26 +39,26 @@ Liefert Notizen in einem kleinen, stabilen JSON-Schema:
 ]
 ```
 
-Standardverhalten:
+Default behavior:
 
-- Archivierte Notizen werden standardmäßig **ausgefiltert**.
-- Gelöschte Notizen (`trashed`) werden standardmäßig **ausgefiltert**.
-- Ergebnisliste ist nach `updated` **absteigend** sortiert (neueste zuerst).
+- Archived notes are **filtered out** by default.
+- Trashed notes (`trashed`) are **filtered out** by default.
+- The result list is sorted by `updated` in **descending** order (newest first).
 
-Optionale Query-Parameter:
+Optional query parameters:
 
-- `include_archived=true` → archivierte Notizen zusätzlich einschließen.
-- `include_trashed=true` → gelöschte Notizen zusätzlich einschließen.
+- `include_archived=true` → include archived notes as well.
+- `include_trashed=true` → include trashed notes as well.
 
-## Entwicklung
+## Development
 
-Dependencies installieren:
+Install dependencies:
 
 ```bash
 pip install -r requirements-dev.txt
 ```
 
-Tests ausführen:
+Run tests:
 
 ```bash
 pytest -q
@@ -54,31 +66,31 @@ pytest -q
 
 ## Docker
 
-1. Umgebungsvariablen vorbereiten:
+1. Prepare environment variables:
 
    ```bash
    cp .env.example .env
    ```
 
-   Danach `KEEP_EMAIL` und `KEEP_APP_PASSWORD` in `.env` setzen.
+   Then set `KEEP_EMAIL` and `KEEP_MASTER_TOKEN` in `.env`.
 
-2. Container starten:
+2. Start the container:
 
    ```bash
    docker compose up
    ```
 
-3. Aufruf im Browser:
+3. Open in your browser:
 
    ```text
    http://localhost:5000
    ```
 
-## Aktueller Funktionsumfang
+## Current Scope
 
-Die aktuelle Version ist **rein lesend**. Erstellung, Bearbeitung und Löschung von Notizen werden derzeit nicht unterstützt.
+The current version is **read-only**. Creating, editing, and deleting notes are not supported yet.
 
-## Typische Fehler
+## Common Issues
 
-- **Falsches App-Passwort:** Anmeldung bei Google Keep schlägt fehl, obwohl die E-Mail korrekt ist.
-- **Login schlägt fehl:** Häufige Ursachen sind fehlende 2FA, ein abgelaufenes/widerrufenes App-Passwort oder Tippfehler in `KEEP_EMAIL` bzw. `KEEP_APP_PASSWORD`.
+- **Authentication fails:** Most often caused by an invalid/revoked master token or typos in `KEEP_EMAIL` / `KEEP_MASTER_TOKEN`.
+- **Slow first startup:** The initial sync can take a while. Keep `KEEP_STATE_PATH` persisted to speed up subsequent starts.
