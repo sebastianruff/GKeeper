@@ -2,6 +2,11 @@
 
 A web app for Google Keep based on kiwiz/gkeepapi.
 
+## Voraussetzungen
+
+- Google-Konto mit aktivierter **2‑Faktor-Authentifizierung (2FA)**.
+- Ein für dieses Konto erstelltes **App-Passwort** (nicht das normale Google-Passwort).
+
 ## API
 
 ### `GET /api/notes`
@@ -60,7 +65,20 @@ pytest -q
 2. Container starten:
 
    ```bash
-   docker compose up --build
+   docker compose up
    ```
 
-Die App ist dann unter `http://localhost:5000` erreichbar.
+3. Aufruf im Browser:
+
+   ```text
+   http://localhost:5000
+   ```
+
+## Aktueller Funktionsumfang
+
+Die aktuelle Version ist **rein lesend**. Erstellung, Bearbeitung und Löschung von Notizen werden derzeit nicht unterstützt.
+
+## Typische Fehler
+
+- **Falsches App-Passwort:** Anmeldung bei Google Keep schlägt fehl, obwohl die E-Mail korrekt ist.
+- **Login schlägt fehl:** Häufige Ursachen sind fehlende 2FA, ein abgelaufenes/widerrufenes App-Passwort oder Tippfehler in `KEEP_EMAIL` bzw. `KEEP_APP_PASSWORD`.
