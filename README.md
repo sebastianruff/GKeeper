@@ -81,11 +81,14 @@ pytest -q
 
    If not set, Compose uses `ghcr.io/sebastianruff/gkeeper:latest` by default.
 
-2. (Optional) choose a custom host port (default: `5000`):
+2. (Optional) choose custom ports (default: `5000`):
 
    ```bash
    export GKEEPER_HOST_PORT=5001
+   export PORT=5001
    ```
+
+   `GKEEPER_HOST_PORT` is the host port, `PORT` is the container-internal port.
 
 3. Pull and start the container:
 
@@ -110,8 +113,9 @@ services:
   gkeeper:
     image: ghcr.io/sebastianruff/gkeeper:latest
     ports:
-      - "${GKEEPER_HOST_PORT:-5000}:5000"
+      - "${GKEEPER_HOST_PORT:-5000}:${PORT:-5000}"
     environment:
+      PORT: ${PORT:-5000}
       GOOGLE_CREDENTIALS_PATH: /data/gkeep_credentials.json
       GOOGLE_STATE_PATH: /data/gkeep_state.json
     volumes:
@@ -123,15 +127,30 @@ services:
 > They will be persisted in `./data/gkeep_credentials.json` with this example.
 
 
-If you need to change the container-internal port as well, set `PORT` and map accordingly:
+If you use your own Compose file, make sure host and container ports match your `PORT` setting.
+A common cause for `ERR_CONNECTION_REFUSED` is mapping `5555:5555` while the app still runs on default `5000`.
+
+Example (works):
 
 ```yaml
 services:
   gkeeper:
+    image: ghcr.io/sebastianruff/gkeeper:latest
+    env_file:
+      - gkeeper.env
     environment:
-      PORT: 5100
+      PORT: 5555
     ports:
-      - "5001:5100"
+      - "5555:5555"
+```
+
+Alternative (no internal port change):
+
+```yaml
+services:
+  gkeeper:
+    ports:
+      - "5555:5000"
 ```
 
 ## Publish the GitHub Package (maintainers)
