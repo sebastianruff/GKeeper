@@ -6,7 +6,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.main import create_app
+from app.main import _get_server_port, create_app
 
 
 class FakeKeep:
@@ -102,3 +102,23 @@ def test_api_config_requires_both_fields():
     response = client.post("/api/config", json={"email": "user@example.com"})
 
     assert response.status_code == 400
+
+
+def test_get_server_port_uses_default_when_missing(monkeypatch):
+    monkeypatch.delenv("PORT", raising=False)
+
+    assert _get_server_port() == 5000
+
+
+def test_get_server_port_reads_valid_env(monkeypatch):
+    monkeypatch.setenv("PORT", "8080")
+
+    assert _get_server_port() == 8080
+
+
+def test_get_server_port_falls_back_for_invalid_values(monkeypatch):
+    monkeypatch.setenv("PORT", "not-a-number")
+    assert _get_server_port() == 5000
+
+    monkeypatch.setenv("PORT", "70000")
+    assert _get_server_port() == 5000
