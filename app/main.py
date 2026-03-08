@@ -1,20 +1,30 @@
+from datetime import datetime
 from typing import Any
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 from app.keep_client import KeepClientError, build_keep_client
 
 
-def _serialize_note(note: Any) -> dict[str, Any]:
+def _parse_bool(value: str | None, *, default: bool = False) -> bool:
+    if value is None:
+        return default
+
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _normalize_note(note: Any) -> dict[str, Any]:
+    updated = getattr(getattr(note, "timestamps", None), "updated", None)
+    updated_iso = updated.isoformat() if isinstance(updated, datetime) else None
+
     return {
-        "id": note.id,
-        "title": note.title,
-        "text": note.text,
-        "trashed": note.trashed,
-        "pinned": note.pinned,
-        "archived": note.archived,
-        "color": str(note.color),
-        "updated": note.timestamps.updated.isoformat() if note.timestamps.updated else None,
+        "id": str(getattr(note, "id", "")),
+        "title": str(getattr(note, "title", "") or ""),
+        "text": str(getattr(note, "text", "") or ""),
+        "pinned": bool(getattr(note, "pinned", False)),
+        "archived": bool(getattr(note, "archived", False)),
+        "trashed": bool(getattr(note, "trashed", False)),
+        "updated": updated_iso,
     }
 
 
@@ -39,13 +49,27 @@ def create_app() -> Flask:
 
     @app.get("/api/notes")
     def api_notes():
+        include_archived = _parse_bool(request.args.get("include_archived"), default=False)
+        include_trashed = _parse_bool(request.args.get("include_trashed"), default=False)
+
         try:
             keep = build_keep_client()
         except KeepClientError as exc:
             return jsonify({"error": str(exc)}), exc.status_code
 
-        notes = [_serialize_note(note) for note in keep.all() if not note.trashed]
-        return jsonify(notes)
+        normalized_notes: list[dict[str, Any]] = []
+        for note in keep.all():
+            normalized_note = _normalize_note(note)
+
+            if not include_archived and normalized_note["archived"]:
+                continue
+            if not include_trashed and normalized_note["trashed"]:
+                continue
+
+            normalized_notes.append(normalized_note)
+
+        normalized_notes.sort(key=lambda note: note["updated"] or "", reverse=True)
+        return jsonify(normalized_notes)
 
     return app
 
