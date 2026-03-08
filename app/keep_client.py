@@ -45,13 +45,13 @@ def _save_state(keep: Keep, state_path: Path) -> None:
 
 def build_keep_client() -> Keep:
     """Create and authenticate a Keep client from environment variables."""
-    email = os.environ.get("KEEP_EMAIL")
-    master_token = os.environ.get("KEEP_MASTER_TOKEN")
-    state_path = Path(os.environ.get("KEEP_STATE_PATH", ".cache/gkeep_state.json"))
+    email = os.environ.get("GOOGLE_EMAIL")
+    master_token = os.environ.get("GOOGLE_MASTER_TOKEN")
+    state_path = Path(os.environ.get("GOOGLE_STATE_PATH", ".cache/gkeep_state.json"))
 
     if not email or not master_token:
         logger.error(
-            "Google Keep credentials are not configured. Expected KEEP_EMAIL and KEEP_MASTER_TOKEN."
+            "Google Keep credentials are not configured. Expected GOOGLE_EMAIL and GOOGLE_MASTER_TOKEN."
         )
         raise KeepClientError("Keep service unavailable", 503)
 

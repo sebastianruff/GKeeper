@@ -16,7 +16,7 @@ To get a master token, follow the `gpsoauth` alternative flow linked from the gk
 
 ### Optional state cache
 
-The app stores Keep sync state in `KEEP_STATE_PATH` (default: `.cache/gkeep_state.json`) and reuses it on next startup.
+The app stores Keep sync state in `GOOGLE_STATE_PATH` (default: `.cache/gkeep_state.json`) and reuses it on next startup.
 This reduces full-sync overhead and follows the gkeepapi recommendation to cache state between runs.
 
 ## API
@@ -72,7 +72,7 @@ pytest -q
    cp .env.example .env
    ```
 
-   Then set `KEEP_EMAIL` and `KEEP_MASTER_TOKEN` in `.env`.
+   Then set `GOOGLE_EMAIL` and `GOOGLE_MASTER_TOKEN` in `.env`.
 
 2. Start the container:
 
@@ -92,5 +92,5 @@ The current version is **read-only**. Creating, editing, and deleting notes are 
 
 ## Common Issues
 
-- **Authentication fails:** Most often caused by an invalid/revoked master token or typos in `KEEP_EMAIL` / `KEEP_MASTER_TOKEN`.
-- **Slow first startup:** The initial sync can take a while. Keep `KEEP_STATE_PATH` persisted to speed up subsequent starts.
+- **Authentication fails:** Most often caused by an invalid/revoked master token or typos in `GOOGLE_EMAIL` / `GOOGLE_MASTER_TOKEN`.
+- **Slow first startup:** The initial sync can take a while. Keep `GOOGLE_STATE_PATH` persisted to speed up subsequent starts.
