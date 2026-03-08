@@ -72,3 +72,33 @@ def test_api_notes_can_include_archived_and_trashed():
     assert response.status_code == 200
     payload = response.get_json()
     assert [note["id"] for note in payload] == ["1", "2"]
+
+
+def test_api_config_status_reflects_saved_credentials(tmp_path):
+    app = create_app()
+    client = app.test_client()
+    credentials_path = tmp_path / "credentials.json"
+
+    with patch.dict("os.environ", {"GOOGLE_CREDENTIALS_PATH": str(credentials_path)}):
+        response = client.get("/api/config")
+        assert response.status_code == 200
+        assert response.get_json() == {"credentials_configured": False}
+
+        response = client.post(
+            "/api/config",
+            json={"email": "user@example.com", "master_token": "token"},
+        )
+        assert response.status_code == 200
+        assert response.get_json() == {"credentials_configured": True}
+
+        response = client.get("/api/config")
+        assert response.get_json() == {"credentials_configured": True}
+
+
+def test_api_config_requires_both_fields():
+    app = create_app()
+    client = app.test_client()
+
+    response = client.post("/api/config", json={"email": "user@example.com"})
+
+    assert response.status_code == 400

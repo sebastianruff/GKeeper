@@ -1,9 +1,8 @@
 from datetime import datetime
-from typing import Any
 
 from flask import Flask, jsonify, request, send_from_directory
 
-from app.keep_client import KeepClientError, build_keep_client
+from app.keep_client import KeepClientError, build_keep_client, has_credentials, save_credentials
 
 
 def _parse_bool(value: str | None, *, default: bool = False) -> bool:
@@ -13,7 +12,7 @@ def _parse_bool(value: str | None, *, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _normalize_note(note: Any) -> dict[str, Any]:
+def _normalize_note(note):
     updated = getattr(getattr(note, "timestamps", None), "updated", None)
     updated_iso = updated.isoformat() if isinstance(updated, datetime) else None
 
@@ -35,6 +34,22 @@ def create_app() -> Flask:
     def index():
         return send_from_directory(app.static_folder or "static", "index.html")
 
+    @app.get("/api/config")
+    def api_config():
+        return jsonify({"credentials_configured": has_credentials()})
+
+    @app.post("/api/config")
+    def api_save_config():
+        payload = request.get_json(silent=True) or {}
+        email = str(payload.get("email", "") or "").strip()
+        master_token = str(payload.get("master_token", "") or "").strip()
+
+        if not email or not master_token:
+            return jsonify({"error": "Email and master token are required."}), 400
+
+        save_credentials(email, master_token)
+        return jsonify({"credentials_configured": True})
+
     @app.get("/api/notes")
     def api_notes():
         include_archived = _parse_bool(request.args.get("include_archived"), default=False)
@@ -45,7 +60,7 @@ def create_app() -> Flask:
         except KeepClientError as exc:
             return jsonify({"error": str(exc)}), exc.status_code
 
-        normalized_notes: list[dict[str, Any]] = []
+        normalized_notes = []
         for note in keep.all():
             normalized_note = _normalize_note(note)
 
