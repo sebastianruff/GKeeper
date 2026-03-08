@@ -5,7 +5,7 @@ function renderNotes(notes) {
   notesGridElement.innerHTML = '';
 
   if (!notes.length) {
-    statusElement.textContent = 'Keine Notizen gefunden.';
+    statusElement.textContent = 'No notes found.';
     return;
   }
 
@@ -16,7 +16,7 @@ function renderNotes(notes) {
     card.className = 'note-card';
 
     const title = document.createElement('h2');
-    title.textContent = note.title || 'Ohne Titel';
+    title.textContent = note.title || 'Untitled';
 
     const text = document.createElement('p');
     text.textContent = note.text || '—';
@@ -28,7 +28,7 @@ function renderNotes(notes) {
 }
 
 async function loadNotes() {
-  statusElement.textContent = 'Lade Notizen …';
+  statusElement.textContent = 'Loading notes…';
 
   try {
     const response = await fetch('/api/notes');
@@ -41,7 +41,7 @@ async function loadNotes() {
     renderNotes(notes);
   } catch (_error) {
     notesGridElement.innerHTML = '';
-    statusElement.textContent = 'Fehler beim Laden der Notizen.';
+    statusElement.textContent = 'Failed to load notes.';
   }
 }
 
