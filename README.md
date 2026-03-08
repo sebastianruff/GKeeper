@@ -5,7 +5,19 @@ A web app for Google Keep based on kiwiz/gkeepapi.
 ## Prerequisites
 
 - A Google account with **2-factor authentication (2FA)** enabled.
-- An **app password** created for that account (not your regular Google password).
+- A **Google master token** for that account (used by `gkeepapi.authenticate`).
+
+## Authentication Setup
+
+This project uses `Keep.authenticate(email, master_token)` instead of the deprecated `Keep.login(...)` flow.
+
+To get a master token, follow the `gpsoauth` alternative flow linked from the gkeepapi docs:
+<https://github.com/simon-weber/gpsoauth#alternative-flow>
+
+### Optional state cache
+
+The app stores Keep sync state in `KEEP_STATE_PATH` (default: `.cache/gkeep_state.json`) and reuses it on next startup.
+This reduces full-sync overhead and follows the gkeepapi recommendation to cache state between runs.
 
 ## API
 
@@ -60,7 +72,7 @@ pytest -q
    cp .env.example .env
    ```
 
-   Then set `KEEP_EMAIL` and `KEEP_APP_PASSWORD` in `.env`.
+   Then set `KEEP_EMAIL` and `KEEP_MASTER_TOKEN` in `.env`.
 
 2. Start the container:
 
@@ -80,5 +92,5 @@ The current version is **read-only**. Creating, editing, and deleting notes are 
 
 ## Common Issues
 
-- **Wrong app password:** Google Keep login fails even when the email address is correct.
-- **Login fails:** Common causes are missing 2FA, an expired/revoked app password, or typos in `KEEP_EMAIL` or `KEEP_APP_PASSWORD`.
+- **Authentication fails:** Most often caused by an invalid/revoked master token or typos in `KEEP_EMAIL` / `KEEP_MASTER_TOKEN`.
+- **Slow first startup:** The initial sync can take a while. Keep `KEEP_STATE_PATH` persisted to speed up subsequent starts.
