@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 
 from app.keep_client import KeepClientError, build_keep_client
 
@@ -32,20 +32,8 @@ def create_app() -> Flask:
     app = Flask(__name__)
 
     @app.get("/")
-    def index() -> str:
-        return """
-        <!doctype html>
-        <html lang=\"de\">
-          <head>
-            <meta charset=\"utf-8\">
-            <title>GKeeper</title>
-          </head>
-          <body>
-            <h1>GKeeper</h1>
-            <p>API-Endpunkt: <code>/api/notes</code></p>
-          </body>
-        </html>
-        """
+    def index():
+        return send_from_directory(app.static_folder or "static", "index.html")
 
     @app.get("/api/notes")
     def api_notes():
