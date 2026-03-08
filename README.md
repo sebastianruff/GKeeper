@@ -46,3 +46,21 @@ Tests ausführen:
 ```bash
 pytest -q
 ```
+
+## Docker
+
+1. Umgebungsvariablen vorbereiten:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Danach `KEEP_EMAIL` und `KEEP_APP_PASSWORD` in `.env` setzen.
+
+2. Container starten:
+
+   ```bash
+   docker compose up --build
+   ```
+
+Die App ist dann unter `http://localhost:5000` erreichbar.
