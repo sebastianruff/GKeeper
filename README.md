@@ -2,16 +2,16 @@
 
 A web app for Google Keep based on kiwiz/gkeepapi.
 
-## Voraussetzungen
+## Prerequisites
 
-- Google-Konto mit aktivierter **2‑Faktor-Authentifizierung (2FA)**.
-- Ein für dieses Konto erstelltes **App-Passwort** (nicht das normale Google-Passwort).
+- A Google account with **2-factor authentication (2FA)** enabled.
+- An **app password** created for that account (not your regular Google password).
 
 ## API
 
 ### `GET /api/notes`
 
-Liefert Notizen in einem kleinen, stabilen JSON-Schema:
+Returns notes in a small, stable JSON schema:
 
 ```json
 [
@@ -27,26 +27,26 @@ Liefert Notizen in einem kleinen, stabilen JSON-Schema:
 ]
 ```
 
-Standardverhalten:
+Default behavior:
 
-- Archivierte Notizen werden standardmäßig **ausgefiltert**.
-- Gelöschte Notizen (`trashed`) werden standardmäßig **ausgefiltert**.
-- Ergebnisliste ist nach `updated` **absteigend** sortiert (neueste zuerst).
+- Archived notes are **filtered out** by default.
+- Trashed notes (`trashed`) are **filtered out** by default.
+- The result list is sorted by `updated` in **descending** order (newest first).
 
-Optionale Query-Parameter:
+Optional query parameters:
 
-- `include_archived=true` → archivierte Notizen zusätzlich einschließen.
-- `include_trashed=true` → gelöschte Notizen zusätzlich einschließen.
+- `include_archived=true` → include archived notes as well.
+- `include_trashed=true` → include trashed notes as well.
 
-## Entwicklung
+## Development
 
-Dependencies installieren:
+Install dependencies:
 
 ```bash
 pip install -r requirements-dev.txt
 ```
 
-Tests ausführen:
+Run tests:
 
 ```bash
 pytest -q
@@ -54,31 +54,31 @@ pytest -q
 
 ## Docker
 
-1. Umgebungsvariablen vorbereiten:
+1. Prepare environment variables:
 
    ```bash
    cp .env.example .env
    ```
 
-   Danach `KEEP_EMAIL` und `KEEP_APP_PASSWORD` in `.env` setzen.
+   Then set `KEEP_EMAIL` and `KEEP_APP_PASSWORD` in `.env`.
 
-2. Container starten:
+2. Start the container:
 
    ```bash
    docker compose up
    ```
 
-3. Aufruf im Browser:
+3. Open in your browser:
 
    ```text
    http://localhost:5000
    ```
 
-## Aktueller Funktionsumfang
+## Current Scope
 
-Die aktuelle Version ist **rein lesend**. Erstellung, Bearbeitung und Löschung von Notizen werden derzeit nicht unterstützt.
+The current version is **read-only**. Creating, editing, and deleting notes are not supported yet.
 
-## Typische Fehler
+## Common Issues
 
-- **Falsches App-Passwort:** Anmeldung bei Google Keep schlägt fehl, obwohl die E-Mail korrekt ist.
-- **Login schlägt fehl:** Häufige Ursachen sind fehlende 2FA, ein abgelaufenes/widerrufenes App-Passwort oder Tippfehler in `KEEP_EMAIL` bzw. `KEEP_APP_PASSWORD`.
+- **Wrong app password:** Google Keep login fails even when the email address is correct.
+- **Login fails:** Common causes are missing 2FA, an expired/revoked app password, or typos in `KEEP_EMAIL` or `KEEP_APP_PASSWORD`.
