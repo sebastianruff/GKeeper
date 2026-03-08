@@ -11,8 +11,13 @@ A web app for Google Keep based on kiwiz/gkeepapi.
 
 This project uses `Keep.authenticate(email, master_token)` instead of the deprecated `Keep.login(...)` flow.
 
-To get a master token, follow the `gpsoauth` alternative flow linked from the gkeepapi docs:
-<https://github.com/simon-weber/gpsoauth#alternative-flow>
+When you open the web app without saved credentials, a setup form is shown automatically.
+The form includes a step-by-step guide to create a Google Master Token and asks for:
+
+- Google email
+- Google master token
+
+The credentials are stored in `GOOGLE_CREDENTIALS_PATH` (default: `.cache/gkeep_credentials.json`).
 
 ### Optional state cache
 
@@ -66,15 +71,7 @@ pytest -q
 
 ## Docker (run from GitHub Package)
 
-1. Prepare environment variables:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Then set `GOOGLE_EMAIL` and `GOOGLE_MASTER_TOKEN` in `.env`.
-
-2. (Optional) set a custom image tag:
+1. (Optional) set a custom image tag:
 
    ```bash
    export GKEEPER_IMAGE=ghcr.io/<github-user-or-org>/gkeeper:latest
@@ -82,17 +79,38 @@ pytest -q
 
    If not set, Compose uses `ghcr.io/your-github-user/gkeeper:latest` by default.
 
-3. Pull and start the container:
+2. Pull and start the container:
 
    ```bash
    docker compose up
    ```
 
-4. Open in your browser:
+3. Open in your browser:
 
    ```text
    http://localhost:5000
    ```
+
+## Docker Compose example
+
+Use this as a minimal `compose.yaml` example:
+
+```yaml
+services:
+  gkeeper:
+    image: ghcr.io/<github-user-or-org>/gkeeper:latest
+    ports:
+      - "5000:5000"
+    environment:
+      GOOGLE_CREDENTIALS_PATH: /data/gkeep_credentials.json
+      GOOGLE_STATE_PATH: /data/gkeep_state.json
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+```
+
+> The first time you open the app, enter your Google email + master token in the setup form.
+> They will be persisted in `./data/gkeep_credentials.json` with this example.
 
 ## Publish the GitHub Package (maintainers)
 
@@ -115,5 +133,5 @@ The current version is **read-only**. Creating, editing, and deleting notes are 
 
 ## Common Issues
 
-- **Authentication fails:** Most often caused by an invalid/revoked master token or typos in `GOOGLE_EMAIL` / `GOOGLE_MASTER_TOKEN`.
+- **Authentication fails:** Most often caused by an invalid/revoked master token or wrong email/token submitted in the setup form.
 - **Slow first startup:** The initial sync can take a while. Keep `GOOGLE_STATE_PATH` persisted to speed up subsequent starts.

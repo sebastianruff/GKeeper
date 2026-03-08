@@ -17,6 +17,43 @@ class KeepClientError(Exception):
         self.status_code = status_code
 
 
+def _load_credentials(credentials_path: Path) -> tuple[str, str] | None:
+    if not credentials_path.exists():
+        return None
+
+    try:
+        with credentials_path.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+    except (OSError, json.JSONDecodeError):
+        logger.warning("Failed to read credentials from %s.", credentials_path)
+        return None
+
+    if not isinstance(data, dict):
+        logger.warning("Credentials file %s is not a JSON object.", credentials_path)
+        return None
+
+    email = str(data.get("email", "") or "").strip()
+    master_token = str(data.get("master_token", "") or "").strip()
+
+    if not email or not master_token:
+        return None
+
+    return email, master_token
+
+
+def save_credentials(email: str, master_token: str) -> None:
+    credentials_path = Path(os.environ.get("GOOGLE_CREDENTIALS_PATH", ".cache/gkeep_credentials.json"))
+    credentials_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with credentials_path.open("w", encoding="utf-8") as file:
+        json.dump({"email": email.strip(), "master_token": master_token.strip()}, file)
+
+
+def has_credentials() -> bool:
+    credentials_path = Path(os.environ.get("GOOGLE_CREDENTIALS_PATH", ".cache/gkeep_credentials.json"))
+    return _load_credentials(credentials_path) is not None
+
+
 def _load_state(state_path: Path) -> dict[str, Any] | None:
     if not state_path.exists():
         return None
@@ -44,16 +81,20 @@ def _save_state(keep: Keep, state_path: Path) -> None:
 
 
 def build_keep_client() -> Keep:
-    """Create and authenticate a Keep client from environment variables."""
-    email = os.environ.get("GOOGLE_EMAIL")
-    master_token = os.environ.get("GOOGLE_MASTER_TOKEN")
+    """Create and authenticate a Keep client from stored credentials."""
+    credentials_path = Path(os.environ.get("GOOGLE_CREDENTIALS_PATH", ".cache/gkeep_credentials.json"))
     state_path = Path(os.environ.get("GOOGLE_STATE_PATH", ".cache/gkeep_state.json"))
+    credentials = _load_credentials(credentials_path)
+
+    email = credentials[0] if credentials else ""
+    master_token = credentials[1] if credentials else ""
 
     if not email or not master_token:
         logger.error(
-            "Google Keep credentials are not configured. Expected GOOGLE_EMAIL and GOOGLE_MASTER_TOKEN."
+            "Google Keep credentials are not configured. Expected credentials in %s.",
+            credentials_path,
         )
-        raise KeepClientError("Keep service unavailable", 503)
+        raise KeepClientError("Keep credentials not configured", 428)
 
     keep = Keep()
     state = _load_state(state_path)
