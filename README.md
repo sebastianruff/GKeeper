@@ -64,7 +64,7 @@ Run tests:
 pytest -q
 ```
 
-## Docker
+## Docker (run from GitHub Package)
 
 1. Prepare environment variables:
 
@@ -74,17 +74,40 @@ pytest -q
 
    Then set `GOOGLE_EMAIL` and `GOOGLE_MASTER_TOKEN` in `.env`.
 
-2. Start the container:
+2. (Optional) set a custom image tag:
+
+   ```bash
+   export GKEEPER_IMAGE=ghcr.io/<github-user-or-org>/gkeeper:latest
+   ```
+
+   If not set, Compose uses `ghcr.io/your-github-user/gkeeper:latest` by default.
+
+3. Pull and start the container:
 
    ```bash
    docker compose up
    ```
 
-3. Open in your browser:
+4. Open in your browser:
 
    ```text
    http://localhost:5000
    ```
+
+## Publish the GitHub Package (maintainers)
+
+The image is published to GitHub Container Registry (GHCR) via `.github/workflows/publish-package.yml`.
+
+- Automatic publish on:
+  - pushes to `main`
+  - tags starting with `v` (for example `v1.0.0`)
+- Manual publish via **Actions → Publish Docker package → Run workflow**
+
+Published image name:
+
+```text
+ghcr.io/<repository_owner>/gkeeper
+```
 
 ## Current Scope
 
