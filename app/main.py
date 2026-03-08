@@ -1,29 +1,8 @@
-import os
 from typing import Any
 
 from flask import Flask, jsonify
-from gkeepapi import Keep
 
-
-def _build_keep_client() -> Keep:
-    """Authenticate a Keep client from environment variables."""
-    email = os.environ.get("GKEEP_EMAIL")
-    password = os.environ.get("GKEEP_PASSWORD")
-    master_token = os.environ.get("GKEEP_MASTER_TOKEN")
-
-    keep = Keep()
-
-    if master_token:
-        keep.resume(email or "", master_token)
-    elif email and password:
-        keep.login(email, password)
-    else:
-        raise RuntimeError(
-            "Missing credentials. Set GKEEP_MASTER_TOKEN (optional with GKEEP_EMAIL) "
-            "or set GKEEP_EMAIL + GKEEP_PASSWORD."
-        )
-
-    return keep
+from app.keep_client import KeepClientError, build_keep_client
 
 
 def _serialize_note(note: Any) -> dict[str, Any]:
@@ -61,9 +40,9 @@ def create_app() -> Flask:
     @app.get("/api/notes")
     def api_notes():
         try:
-            keep = _build_keep_client()
-        except RuntimeError as exc:
-            return jsonify({"error": str(exc)}), 503
+            keep = build_keep_client()
+        except KeepClientError as exc:
+            return jsonify({"error": str(exc)}), exc.status_code
 
         notes = [_serialize_note(note) for note in keep.all() if not note.trashed]
         return jsonify(notes)
