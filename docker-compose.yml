@@ -1,6 +1,7 @@
 services:
   gkeeper:
-    build: .
+    image: ${GKEEPER_IMAGE:-ghcr.io/your-github-user/gkeeper:latest}
+    pull_policy: always
     ports:
       - "5000:5000"
     env_file:
