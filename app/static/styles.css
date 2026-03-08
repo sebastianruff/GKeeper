@@ -28,6 +28,46 @@ h1 {
   color: #6b7280;
 }
 
+.setup-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.setup-panel h2 {
+  margin-top: 0;
+}
+
+.setup-steps {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  padding-left: 1.2rem;
+}
+
+.setup-form {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 420px;
+}
+
+.setup-form input {
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.6rem;
+}
+
+.setup-form button {
+  margin-top: 0.3rem;
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  background: #2563eb;
+  color: #ffffff;
+  cursor: pointer;
+}
+
 #status {
   margin: 0 0 1rem;
   min-height: 1.25rem;
