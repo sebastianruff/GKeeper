@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from flask import Flask, jsonify, request, send_from_directory
@@ -80,5 +81,15 @@ def create_app() -> Flask:
 app = create_app()
 
 
+def _get_server_port() -> int:
+    raw_port = os.getenv("PORT", "5000").strip()
+    try:
+        port = int(raw_port)
+    except ValueError:
+        return 5000
+
+    return port if 1 <= port <= 65535 else 5000
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=_get_server_port())

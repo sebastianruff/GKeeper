@@ -81,17 +81,28 @@ pytest -q
 
    If not set, Compose uses `ghcr.io/sebastianruff/gkeeper:latest` by default.
 
-2. Pull and start the container:
+2. (Optional) choose custom ports (default: `5000`):
+
+   ```bash
+   export GKEEPER_HOST_PORT=5001
+   export PORT=5001
+   ```
+
+   `GKEEPER_HOST_PORT` is the host port, `PORT` is the container-internal port.
+
+3. Pull and start the container:
 
    ```bash
    docker compose up
    ```
 
-3. Open in your browser:
+4. Open in your browser:
 
    ```text
-   http://localhost:5000
+   http://localhost:${GKEEPER_HOST_PORT:-5000}
    ```
+
+   > Avoid Chrome unsafe ports like `6000` (`ERR_UNSAFE_PORT`). Use a different host port such as `5000`, `5001`, or `8080`.
 
 ## Docker Compose example
 
@@ -102,8 +113,9 @@ services:
   gkeeper:
     image: ghcr.io/sebastianruff/gkeeper:latest
     ports:
-      - "5000:5000"
+      - "${GKEEPER_HOST_PORT:-5000}:${PORT:-5000}"
     environment:
+      PORT: ${PORT:-5000}
       GOOGLE_CREDENTIALS_PATH: /data/gkeep_credentials.json
       GOOGLE_STATE_PATH: /data/gkeep_state.json
     volumes:
@@ -113,6 +125,33 @@ services:
 
 > The first time you open the app, enter your Google email + master token in the setup form.
 > They will be persisted in `./data/gkeep_credentials.json` with this example.
+
+
+If you use your own Compose file, make sure host and container ports match your `PORT` setting.
+A common cause for `ERR_CONNECTION_REFUSED` is mapping `5555:5555` while the app still runs on default `5000`.
+
+Example (works):
+
+```yaml
+services:
+  gkeeper:
+    image: ghcr.io/sebastianruff/gkeeper:latest
+    env_file:
+      - gkeeper.env
+    environment:
+      PORT: 5555
+    ports:
+      - "5555:5555"
+```
+
+Alternative (no internal port change):
+
+```yaml
+services:
+  gkeeper:
+    ports:
+      - "5555:5000"
+```
 
 ## Publish the GitHub Package (maintainers)
 
