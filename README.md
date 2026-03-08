@@ -2,16 +2,28 @@
 
 A web app for Google Keep based on kiwiz/gkeepapi.
 
-## Voraussetzungen
+## Prerequisites
 
-- Google-Konto mit aktivierter **2‑Faktor-Authentifizierung (2FA)**.
-- Ein für dieses Konto erstelltes **App-Passwort** (nicht das normale Google-Passwort).
+- A Google account with **2-factor authentication (2FA)** enabled.
+- A **Google master token** for that account (used by `gkeepapi.authenticate`).
+
+## Authentication Setup
+
+This project uses `Keep.authenticate(email, master_token)` instead of the deprecated `Keep.login(...)` flow.
+
+To get a master token, follow the `gpsoauth` alternative flow linked from the gkeepapi docs:
+<https://github.com/simon-weber/gpsoauth#alternative-flow>
+
+### Optional state cache
+
+The app stores Keep sync state in `GOOGLE_STATE_PATH` (default: `.cache/gkeep_state.json`) and reuses it on next startup.
+This reduces full-sync overhead and follows the gkeepapi recommendation to cache state between runs.
 
 ## API
 
 ### `GET /api/notes`
 
-Liefert Notizen in einem kleinen, stabilen JSON-Schema:
+Returns notes in a small, stable JSON schema:
 
 ```json
 [
@@ -27,58 +39,81 @@ Liefert Notizen in einem kleinen, stabilen JSON-Schema:
 ]
 ```
 
-Standardverhalten:
+Default behavior:
 
-- Archivierte Notizen werden standardmäßig **ausgefiltert**.
-- Gelöschte Notizen (`trashed`) werden standardmäßig **ausgefiltert**.
-- Ergebnisliste ist nach `updated` **absteigend** sortiert (neueste zuerst).
+- Archived notes are **filtered out** by default.
+- Trashed notes (`trashed`) are **filtered out** by default.
+- The result list is sorted by `updated` in **descending** order (newest first).
 
-Optionale Query-Parameter:
+Optional query parameters:
 
-- `include_archived=true` → archivierte Notizen zusätzlich einschließen.
-- `include_trashed=true` → gelöschte Notizen zusätzlich einschließen.
+- `include_archived=true` → include archived notes as well.
+- `include_trashed=true` → include trashed notes as well.
 
-## Entwicklung
+## Development
 
-Dependencies installieren:
+Install dependencies:
 
 ```bash
 pip install -r requirements-dev.txt
 ```
 
-Tests ausführen:
+Run tests:
 
 ```bash
 pytest -q
 ```
 
-## Docker
+## Docker (run from GitHub Package)
 
-1. Umgebungsvariablen vorbereiten:
+1. Prepare environment variables:
 
    ```bash
    cp .env.example .env
    ```
 
-   Danach `KEEP_EMAIL` und `KEEP_APP_PASSWORD` in `.env` setzen.
+   Then set `GOOGLE_EMAIL` and `GOOGLE_MASTER_TOKEN` in `.env`.
 
-2. Container starten:
+2. (Optional) set a custom image tag:
+
+   ```bash
+   export GKEEPER_IMAGE=ghcr.io/<github-user-or-org>/gkeeper:latest
+   ```
+
+   If not set, Compose uses `ghcr.io/your-github-user/gkeeper:latest` by default.
+
+3. Pull and start the container:
 
    ```bash
    docker compose up
    ```
 
-3. Aufruf im Browser:
+4. Open in your browser:
 
    ```text
    http://localhost:5000
    ```
 
-## Aktueller Funktionsumfang
+## Publish the GitHub Package (maintainers)
 
-Die aktuelle Version ist **rein lesend**. Erstellung, Bearbeitung und Löschung von Notizen werden derzeit nicht unterstützt.
+The image is published to GitHub Container Registry (GHCR) via `.github/workflows/publish-package.yml`.
 
-## Typische Fehler
+- Automatic publish on:
+  - pushes to `main`
+  - tags starting with `v` (for example `v1.0.0`)
+- Manual publish via **Actions → Publish Docker package → Run workflow**
 
-- **Falsches App-Passwort:** Anmeldung bei Google Keep schlägt fehl, obwohl die E-Mail korrekt ist.
-- **Login schlägt fehl:** Häufige Ursachen sind fehlende 2FA, ein abgelaufenes/widerrufenes App-Passwort oder Tippfehler in `KEEP_EMAIL` bzw. `KEEP_APP_PASSWORD`.
+Published image name:
+
+```text
+ghcr.io/<repository_owner>/gkeeper
+```
+
+## Current Scope
+
+The current version is **read-only**. Creating, editing, and deleting notes are not supported yet.
+
+## Common Issues
+
+- **Authentication fails:** Most often caused by an invalid/revoked master token or typos in `GOOGLE_EMAIL` / `GOOGLE_MASTER_TOKEN`.
+- **Slow first startup:** The initial sync can take a while. Keep `GOOGLE_STATE_PATH` persisted to speed up subsequent starts.
